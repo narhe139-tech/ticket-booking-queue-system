@@ -1,0 +1,460 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickTicket - Ticket Booking System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #123b70;
+            color: white;
+            padding: 25px 15px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #dbeafe;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+        }
+
+        h2 {
+            color: #123b70;
+            margin-bottom: 18px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: #e0ecff;
+            text-align: center;
+            padding: 18px 8px;
+            border-radius: 10px;
+        }
+
+        .stat h3 {
+            font-size: 25px;
+            color: #123b70;
+            margin-bottom: 5px;
+        }
+
+        .stat p {
+            font-size: 13px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 4px 3px 4px 0;
+        }
+
+        .primary {
+            background: #1764c0;
+            color: white;
+        }
+
+        .success {
+            background: #15803d;
+            color: white;
+        }
+
+        .secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        button:hover {
+            opacity: 0.88;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 13px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .position {
+            display: inline-block;
+            background: #dbeafe;
+            color: #123b70;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .empty {
+            color: #64748b;
+            padding: 10px 0;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .history-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 550px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .queue-item {
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎟️ QuickTicket</h1>
+    <p>Simple and fair ticket booking using the Queue data structure</p>
+</header>
+
+<main class="container">
+
+    <section class="stats">
+        <div class="stat">
+            <h3 id="available">20</h3>
+            <p>Tickets Available</p>
+        </div>
+
+        <div class="stat">
+            <h3 id="waiting">0</h3>
+            <p>Customers Waiting</p>
+        </div>
+
+        <div class="stat">
+            <h3 id="booked">0</h3>
+            <p>Tickets Booked</p>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Book a Ticket</h2>
+
+        <form id="bookingForm">
+            <label for="customerName">Customer Name</label>
+            <input
+                type="text"
+                id="customerName"
+                placeholder="Enter your full name"
+                required
+            >
+
+            <label for="ticketType">Ticket Type</label>
+            <select id="ticketType">
+                <option value="Standard">Standard Ticket</option>
+                <option value="VIP">VIP Ticket</option>
+            </select>
+
+            <button type="submit" class="primary" id="joinButton">
+                Join Booking Queue
+            </button>
+        </form>
+
+        <div class="message" id="message" role="status"></div>
+    </section>
+
+    <section class="card">
+        <h2>📋 Booking Queue</h2>
+        <p>Customers are served in the order they join the queue.</p>
+        <br>
+
+        <div id="queueList">
+            <p class="empty">No customers are waiting.</p>
+        </div>
+
+        <br>
+
+        <button class="success" id="processButton">
+            Process Next Customer
+        </button>
+
+        <button class="secondary" id="resetButton">
+            Reset Demo
+        </button>
+    </section>
+
+    <section class="card">
+        <h2>✅ Booking History</h2>
+
+        <div id="historyList">
+            <p class="empty">No tickets have been booked yet.</p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Queue-Based Ticket Booking System | Data Structures Project</p>
+    <p>Demonstrating First In, First Out (FIFO)</p>
+</footer>
+
+<script>
+    // A queue stores customers in the order they arrive.
+    const bookingQueue = [];
+    const bookingHistory = [];
+
+    const TOTAL_TICKETS = 20;
+    let availableTickets = TOTAL_TICKETS;
+    let nextBookingNumber = 1;
+
+    const bookingForm = document.getElementById("bookingForm");
+    const customerName = document.getElementById("customerName");
+    const ticketType = document.getElementById("ticketType");
+    const message = document.getElementById("message");
+
+    const availableDisplay = document.getElementById("available");
+    const waitingDisplay = document.getElementById("waiting");
+    const bookedDisplay = document.getElementById("booked");
+
+    const queueList = document.getElementById("queueList");
+    const historyList = document.getElementById("historyList");
+    const processButton = document.getElementById("processButton");
+    const joinButton = document.getElementById("joinButton");
+
+    bookingForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const name = customerName.value.trim();
+
+        if (name === "") {
+            showMessage("Please enter the customer's name.");
+            return;
+        }
+
+        if (availableTickets === 0) {
+            showMessage("Sorry, all tickets have been booked.");
+            return;
+        }
+
+        const alreadyWaiting = bookingQueue.some(function(customer) {
+            return customer.name.toLowerCase() === name.toLowerCase();
+        });
+
+        if (alreadyWaiting) {
+            showMessage("This customer is already in the queue.");
+            return;
+        }
+
+        const customer = {
+            name: name,
+            type: ticketType.value,
+            bookingNumber: nextBookingNumber++
+        };
+
+        // ENQUEUE: Add a new customer to the end of the queue.
+        bookingQueue.push(customer);
+
+        showMessage(
+            name + " has joined the queue successfully. Queue position: "
+            + bookingQueue.length
+        );
+
+        bookingForm.reset();
+        updateDisplay();
+    });
+
+    processButton.addEventListener("click", function() {
+        if (bookingQueue.length === 0) {
+            showMessage("The queue is empty. No customer to process.");
+            return;
+        }
+
+        if (availableTickets === 0) {
+            showMessage("All tickets have been sold.");
+            return;
+        }
+
+        // DEQUEUE: Remove the first customer in the queue.
+        const customer = bookingQueue.shift();
+
+        availableTickets--;
+
+        const booking = {
+            ...customer,
+            ticketNumber: "QT-" + String(customer.bookingNumber).padStart(4, "0")
+        };
+
+        bookingHistory.unshift(booking);
+
+        showMessage(
+            "Booking confirmed for " + customer.name +
+            "! Ticket number: " + booking.ticketNumber
+        );
+
+        updateDisplay();
+    });
+
+    document.getElementById("resetButton").addEventListener("click", function() {
+        const confirmed = confirm(
+            "Reset the demonstration? This will clear the queue and booking history."
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        bookingQueue.length = 0;
+        bookingHistory.length = 0;
+        availableTickets = TOTAL_TICKETS;
+        nextBookingNumber = 1;
+
+        showMessage("The demonstration has been reset.");
+        updateDisplay();
+    });
+
+    function showMessage(text) {
+        message.textContent = text;
+        message.style.display = "block";
+    }
+
+    function updateDisplay() {
+        availableDisplay.textContent = availableTickets;
+        waitingDisplay.textContent = bookingQueue.length;
+        bookedDisplay.textContent = bookingHistory.length;
+
+        joinButton.disabled = availableTickets === 0;
+        processButton.disabled =
+            bookingQueue.length === 0 || availableTickets === 0;
+
+        if (bookingQueue.length === 0) {
+            queueList.innerHTML =
+                '<p class="empty">No customers are waiting.</p>';
+        } else {
+            queueList.innerHTML = bookingQueue.map(function(customer, index) {
+                return `
+                    <div class="queue-item">
+                        <div>
+                            <span class="position">${index + 1}</span>
+                            <strong>${escapeHTML(customer.name)}</strong>
+                            <br>
+                            <small>${escapeHTML(customer.type)} Ticket</small>
+                        </div>
+                        <span>Waiting</span>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        if (bookingHistory.length === 0) {
+            historyList.innerHTML =
+                '<p class="empty">No tickets have been booked yet.</p>';
+        } else {
+            historyList.innerHTML = bookingHistory.map(function(booking) {
+                return `
+                    <div class="history-item">
+                        <strong>${escapeHTML(booking.name)}</strong>
+                        <br>
+                        <small>
+                            ${escapeHTML(booking.type)} Ticket |
+                            Ticket No: ${booking.ticketNumber}
+                        </small>
+                    </div>
+                `;
+            }).join("");
+        }
+    }
+
+    function escapeHTML(text) {
+        return String(text).replace(/[&<>"']/g, function(character) {
+            const entities = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+
+            return entities[character];
+        });
+    }
+
+    updateDisplay();
+</script>
+
+</body>
+</html>
